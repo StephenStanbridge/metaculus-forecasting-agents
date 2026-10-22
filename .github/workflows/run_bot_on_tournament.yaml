@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 
 
-# Daily job to run the simple forecast bot
+# Runs every 20 minutes: forecasts newly opened tournament questions, skips ones already forecast
 jobs:
   forecast_job:
     runs-on: ubuntu-latest # determines the machine that will run the job - keep as is
