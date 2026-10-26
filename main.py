@@ -42,6 +42,8 @@ from forecasting_tools import (
     structure_output,
 )
 
+from distribution_tails import add_tail_percentiles
+
 dotenv.load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -487,6 +489,7 @@ class FallTemplateBot2026(ForecastBot):
             additional_instructions=parsing_instructions,
             num_validation_samples=self._structure_output_validation_samples,
         )
+        percentile_list = add_tail_percentiles(percentile_list, question)
         prediction = NumericDistribution.from_question(percentile_list, question)
         logger.info(
             f"Forecasted URL {question.page_url} with prediction: {prediction.declared_percentiles}."
@@ -587,6 +590,7 @@ class FallTemplateBot2026(ForecastBot):
             )
             for percentile in date_percentile_list
         ]
+        percentile_list = add_tail_percentiles(percentile_list, question)
         prediction = NumericDistribution.from_question(percentile_list, question)
         logger.info(
             f"Forecasted URL {question.page_url} with prediction: {prediction.declared_percentiles}."
