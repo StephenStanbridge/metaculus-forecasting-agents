@@ -43,6 +43,7 @@ from forecasting_tools import (
 )
 
 from distribution_tails import add_tail_percentiles
+from news_research import NEWS_HOURS_BACK, latest_news
 
 dotenv.load_dotenv()
 logger = logging.getLogger(__name__)
@@ -162,10 +163,12 @@ class FallTemplateBot2026(ForecastBot):
             purposes = [p for p in self.RESEARCH_PURPOSES if self._llms.get(p)]
             if not purposes:
                 return ""
+            news_task = asyncio.create_task(latest_news(question.question_text))
             results = await asyncio.gather(
                 *[self.get_llm(p, "llm").invoke(prompt) for p in purposes],
                 return_exceptions=True,
             )
+            news = await news_task
             sections = []
             for purpose, result in zip(purposes, results):
                 model = self.get_llm(purpose, "llm").model
@@ -176,6 +179,11 @@ class FallTemplateBot2026(ForecastBot):
                     continue
                 if result and result.strip():
                     sections.append(f"## Research source: {model}\n\n{result.strip()}")
+            if news:
+                sections.append(
+                    "## Research source: AskNews (news articles from the last "
+                    f"{NEWS_HOURS_BACK} hours; raw articles, not a summary)\n\n{news}"
+                )
             if not sections:
                 raise RuntimeError(
                     f"All research sources failed for {question.page_url}"
